@@ -1,0 +1,24 @@
+* @marcho4
+
+# Основные конфигурационные файлы
+pyproject.toml @marcho4
+requirements*.txt @marcho4
+compose.yaml @marcho4
+Dockerfile @marcho4
+.env.example @marcho4
+CODEOWNERS @marcho4
+
+# Безопасность и аутентификация
+app/auth/ @marcho4
+app/models/database.py @marcho4
+
+# База данных и миграции
+app/db/ @marcho4
+app/models/ @marcho4
+
+# API роутеры
+app/routers/ @marcho4
+
+app/schemas/ @marcho4
+
+app/crud/ @marcho4
