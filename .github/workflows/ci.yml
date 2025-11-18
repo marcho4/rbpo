@@ -36,3 +36,22 @@ jobs:
 
       - name: Pre-commit (all files)
         run: SKIP=no-commit-to-branch pre-commit run --all-files
+
+      - name: Build Docker image
+        run: docker build -t secdev-app:latest .
+
+      - name: Scan Docker image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'secdev-app:latest'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+          format: 'json'
+          output: 'trivy-report.json'
+
+      - name: Upload report as artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-scan-report
+          path: trivy-report.json
