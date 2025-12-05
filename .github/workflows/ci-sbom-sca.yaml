@@ -30,7 +30,7 @@ jobs:
 
       - name: Generate SBOM
         run: |
-          syft . -o cyclonedx-json > EVIDENCE/P09/sbom.json
+          syft dir:. -o cyclonedx-json@1.5 > EVIDENCE/P09/sbom.json
           echo "SBOM generated at EVIDENCE/P09/sbom.json"
 
       - name: Start SCA (JSON Report)
