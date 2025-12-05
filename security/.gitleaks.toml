@@ -3,30 +3,32 @@ title = "Gitleaks Configuration for Simple CRM"
 [extend]
 useDefault = true
 
-# Allowlist for known false positives
-[[allowlist]]
-description = "Ignore test files and mock data"
+[allowlist]
+description = "Allowlist configuration for Simple CRM"
+
 paths = [
   '''tests/.*''',
   '''.*test.*\.py''',
   '''.*mock.*\.py''',
-]
-
-[[allowlist]]
-description = "Ignore example environment file"
-paths = [
   '''\.env\.example''',
-]
-
-[[allowlist]]
-description = "Ignore documentation"
-paths = [
   '''docs/.*''',
   '''README\.md''',
   '''.*\.md''',
+  '''tests/fixtures/.*''',
+  '''requirements.*\.txt''',
+  '''\.git/.*''',
+  '''\.github/.*''',
+  '''\.pre-commit-config\.yaml''',
 ]
 
-# Custom rules for Python/FastAPI project
+regexes = [
+  '''SECRET_KEY = os\.getenv\("SECRET_KEY", "secret"\)''',
+  '''echo=True''',
+  '''password.*=.*"test"''',
+  '''token.*=.*"test"''',
+  '''secret.*=.*"test"''',
+]
+
 [[rules]]
 id = "python-secret-key"
 description = "Python SECRET_KEY in code"
@@ -74,44 +76,3 @@ tags = ["entropy", "generic"]
 [[rules.Entropies]]
 Min = "4.5"
 Max = "8"
-
-# Allowlist specific patterns that are safe
-[[allowlist]]
-description = "Ignore default test secret in auth.py"
-regexes = [
-  '''SECRET_KEY = os\.getenv\("SECRET_KEY", "secret"\)''',
-]
-
-[[allowlist]]
-description = "Ignore SQLAlchemy echo parameter"
-regexes = [
-  '''echo=True''',
-]
-
-[[allowlist]]
-description = "Ignore common test strings"
-regexes = [
-  '''password.*=.*"test"''',
-  '''token.*=.*"test"''',
-  '''secret.*=.*"test"''',
-]
-
-[[allowlist]]
-description = "Ignore base64 encoded test data"
-paths = [
-  '''tests/fixtures/.*''',
-]
-
-[[allowlist]]
-description = "Ignore requirements files"
-paths = [
-  '''requirements.*\.txt''',
-]
-
-[[allowlist]]
-description = "Ignore git and CI configuration"
-paths = [
-  '''\.git/.*''',
-  '''\.github/.*''',
-  '''\.pre-commit-config\.yaml''',
-]
