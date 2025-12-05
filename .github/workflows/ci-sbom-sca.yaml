@@ -1,0 +1,56 @@
+name: ci-sbom-sca
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-sbom-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security-check:
+    name: SBOM & SCA Generation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Create Evidence Directory
+        run: mkdir -p EVIDENCE/P09
+
+      - name: Install Syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Generate SBOM
+        run: |
+          syft dir:. -o cyclonedx-json > EVIDENCE/P09/sbom.json
+
+      - name: Install Grype
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Start SCA with Grype (JSON Report)
+        run: |
+          grype sbom:EVIDENCE/P09/sbom.json -o json > EVIDENCE/P09/sca_report.json || true
+
+      - name: Generate SCA Summary (Table)
+        run: |
+          grype sbom:EVIDENCE/P09/sbom.json -o table --only-fixed > EVIDENCE/P09/sca_summary.md || true
+
+      - name: Check for Critical Vulnerabilities
+        run: |
+          grype sbom:EVIDENCE/P09/sbom.json --fail-on critical
+
+      - name: Upload Evidence Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence-p09
+          path: EVIDENCE/P09/
