@@ -1,0 +1,62 @@
+name: ci-sbom-sca
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security-check:
+    name: SBOM & SCA Generation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Create Evidence Directory
+        run: mkdir -p EVIDENCE/P09
+
+      - name: Install Syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Generate SBOM
+        run: |
+          syft . -o cyclonedx-json > EVIDENCE/P09/sbom.json
+          echo "SBOM generated at EVIDENCE/P09/sbom.json"
+
+      - name: Start SCA (JSON Report)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'sbom'
+          scan-ref: 'EVIDENCE/P09/sbom.json'
+          format: 'json'
+          output: 'EVIDENCE/P09/sca_report.json'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+      - name: Generate SCA Summary (Markdown)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'sbom'
+          scan-ref: 'EVIDENCE/P09/sbom.json'
+          format: 'table'
+          output: 'EVIDENCE/P09/sca_summary.md'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          ignore-unfixed: true
+
+      - name: Upload Evidence Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence-p09
+          path: EVIDENCE/P09/
