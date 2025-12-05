@@ -1,0 +1,117 @@
+title = "Gitleaks Configuration for Simple CRM"
+
+[extend]
+useDefault = true
+
+# Allowlist for known false positives
+[[allowlist]]
+description = "Ignore test files and mock data"
+paths = [
+  '''tests/.*''',
+  '''.*test.*\.py''',
+  '''.*mock.*\.py''',
+]
+
+[[allowlist]]
+description = "Ignore example environment file"
+paths = [
+  '''\.env\.example''',
+]
+
+[[allowlist]]
+description = "Ignore documentation"
+paths = [
+  '''docs/.*''',
+  '''README\.md''',
+  '''.*\.md''',
+]
+
+# Custom rules for Python/FastAPI project
+[[rules]]
+id = "python-secret-key"
+description = "Python SECRET_KEY in code"
+regex = '''SECRET_KEY\s*=\s*["'][^"']{16,}["']'''
+tags = ["key", "python"]
+[[rules.Entropies]]
+Min = "3.5"
+Max = "8"
+
+[[rules]]
+id = "database-url-with-password"
+description = "Database URL with embedded password"
+regex = '''(?i)(postgres|mysql|mongodb)://[^:]+:[^@]+@'''
+tags = ["database", "password"]
+
+[[rules]]
+id = "jwt-secret"
+description = "JWT secret or signing key"
+regex = '''(?i)(jwt[_-]?secret|signing[_-]?key)\s*[:=]\s*["'][^"']{16,}["']'''
+tags = ["jwt", "secret"]
+
+[[rules]]
+id = "api-key-header"
+description = "API key in header or config"
+regex = '''(?i)(api[_-]?key|apikey)\s*[:=]\s*["'][a-zA-Z0-9]{20,}["']'''
+tags = ["api", "key"]
+
+[[rules]]
+id = "private-key-file"
+description = "Private key file content"
+regex = '''-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----'''
+tags = ["private-key"]
+
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key ID"
+regex = '''AKIA[0-9A-Z]{16}'''
+tags = ["aws", "key"]
+
+[[rules]]
+id = "generic-high-entropy-string"
+description = "High entropy string that might be a secret"
+regex = '''["'][a-zA-Z0-9+/]{32,}={0,2}["']'''
+tags = ["entropy", "generic"]
+[[rules.Entropies]]
+Min = "4.5"
+Max = "8"
+
+# Allowlist specific patterns that are safe
+[[allowlist]]
+description = "Ignore default test secret in auth.py"
+regexes = [
+  '''SECRET_KEY = os\.getenv\("SECRET_KEY", "secret"\)''',
+]
+
+[[allowlist]]
+description = "Ignore SQLAlchemy echo parameter"
+regexes = [
+  '''echo=True''',
+]
+
+[[allowlist]]
+description = "Ignore common test strings"
+regexes = [
+  '''password.*=.*"test"''',
+  '''token.*=.*"test"''',
+  '''secret.*=.*"test"''',
+]
+
+[[allowlist]]
+description = "Ignore base64 encoded test data"
+paths = [
+  '''tests/fixtures/.*''',
+]
+
+[[allowlist]]
+description = "Ignore requirements files"
+paths = [
+  '''requirements.*\.txt''',
+]
+
+[[allowlist]]
+description = "Ignore git and CI configuration"
+paths = [
+  '''\.git/.*''',
+  '''\.github/.*''',
+  '''\.pre-commit-config\.yaml''',
+]
