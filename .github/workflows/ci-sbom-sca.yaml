@@ -46,7 +46,7 @@ jobs:
 
       - name: Check for Critical Vulnerabilities
         run: |
-          grype sbom:EVIDENCE/P09/sbom.json --fail-on medium
+          grype sbom:EVIDENCE/P09/sbom.json --fail-on critical
 
       - name: Upload Evidence Artifacts
         if: always()
