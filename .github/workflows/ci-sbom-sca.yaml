@@ -31,7 +31,6 @@ jobs:
       - name: Generate SBOM
         run: |
           syft dir:. -o cyclonedx-json > EVIDENCE/P09/sbom.json
-          echo "✅ SBOM generated"
 
       - name: Install Grype
         run: |
