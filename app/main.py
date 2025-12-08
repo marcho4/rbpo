@@ -50,6 +50,15 @@ app.include_router(companies.router)
 app.include_router(leads.router)
 
 
+@app.get("/")
+def root():
+    return {
+        "message": "Welcome to Simple CRM System",
+        "version": "0.1.0",
+        "docs": "/docs",
+    }
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
