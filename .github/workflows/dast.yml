@@ -43,13 +43,17 @@ jobs:
           timeout 30 bash -c 'until curl -sf http://localhost:8000/health; do sleep 1; done'
 
       - name: ZAP Baseline
+        uses: zaproxy/action-baseline@v0.13.0
+        with:
+          target: 'http://localhost:8000'
+          fail_action: false
+          allow_issue_writing: false
+
+      - name: Copy ZAP reports
+        if: always()
         run: |
-          docker run --rm --network host -v $PWD:/zap/wrk:rw ghcr.io/zaproxy/zaproxy:stable \
-            zap-baseline.py \
-              -t http://localhost:8000 \
-              -r EVIDENCE/P11/zap_baseline.html \
-              -J EVIDENCE/P11/zap_baseline.json \
-              -d || true
+          cp report_html.html EVIDENCE/P11/zap_baseline.html || true
+          cp report_json.json EVIDENCE/P11/zap_baseline.json || true
 
       - name: Upload P11 evidence
         if: always()
